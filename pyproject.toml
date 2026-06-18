@@ -12,8 +12,14 @@ dependencies = [
   "PyYAML>=6.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+
 [project.scripts]
 tone9 = "outline_gen.cli:main"
 
-[tool.setuptools]
-packages = ["outline_gen", "outline_gen.odt"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["outline_gen*"]
