@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p out/png_review
+exec python3 -m outline_gen.cli generate \
+  --service services/current.yaml \
+  --out out/current.odt \
+  --pdf \
+  --audit \
+  --metrics metrics/tone9.prom \
+  --libreoffice-profile .tmp/libreoffice-profile
