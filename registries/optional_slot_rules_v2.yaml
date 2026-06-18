@@ -1,0 +1,23 @@
+# Optional slot rules, v2
+version: 2
+rules:
+  vespers.readings:
+    include_when: "Minaion/rubrics provide Old Testament readings"
+    omit_when: "no readings are supplied"
+  matins.psalm_118:
+    include_when: "simple/six-stichira/doxologia service shape where Psalm 118 remains in the outline"
+    omit_when: "Polyeleos replaces the generic Psalm 118 row in compact outline"
+  matins.first_psalter_theotokion_fallback:
+    include_when: "God-is-the-Lord Theotokion is replaced and the tone-relative fallback must be preserved"
+    omit_when: "God-is-the-Lord Theotokion already supplies the needed tone-relative Theotokion"
+  matins.polyeleos_block:
+    include_when: "Polyeleos or higher service shape"
+  matins.saint_sessionals_after_ypakoi:
+    include_when: "Minaion/rubrics prescribe saint sessional hymns after Polyeleos/Ypakoi"
+  praises.stichoi_for_7_8:
+    include_when: "Minaion Praises use special stichoi for 7 and 8"
+    omit_when: "Praises are all Oktoichos or no special 7/8 stichoi are used"
+  liturgy.second_prokeimenon_alleluia_communion:
+    include_when: "Liturgy source includes second saint/feast items"
+    label_when_included: ["Prokeimena:", "Alleluiaria:", "Communion stichoi:"]
+    label_when_omitted: ["Prokeimen.", "Alleluia", "Communion stichos"]

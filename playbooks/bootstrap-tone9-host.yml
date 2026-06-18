@@ -1,0 +1,6 @@
+---
+- name: Bootstrap tone9 host
+  hosts: all
+  become: true
+  roles:
+    - tone9_host

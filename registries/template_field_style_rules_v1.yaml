@@ -1,0 +1,25 @@
+# Template variable-field polish rules
+version: 1
+rules:
+  header_ods_marker:
+    example: "[ §___ – ___ svc ]"
+    style: rank-marker-field
+    visible_format: "7pt, non-bold, highlighted review field"
+    note: "The ODS marker is a derived/review value, not a primary rubrics input."
+  matins_gospel_line:
+    example: "Matins Gospel ___ [___] “”…"
+    variable_fields:
+      - gospel_cycle_number
+      - gospel_reference_and_section
+    style: var-src-tone-spoken
+  kanon_saint_allocation:
+    example: "3 ___ [Minai.] “___, pray to God for us”"
+    variable_fields:
+      - saint_role_label
+      - saint_prayer_incipit
+    note: "The count 3 is a neutral spoken-count; the saint role and prayer text are variable."
+  exaposteilaria_heading:
+    example: "Exaposteilaria: Matins Gospel ___"
+    variable_fields:
+      - gospel_cycle_number
+    style: var-src-tone-spoken

@@ -1,0 +1,60 @@
+---
+- name: Ensure tone9 runtime directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ tone9_runtime_user }}"
+    group: "{{ tone9_runtime_group }}"
+    mode: "0755"
+  become: true
+  loop:
+    - "{{ tone9_current_dir }}"
+    - "{{ tone9_output_dir }}"
+    - "{{ tone9_data_dir }}"
+    - "{{ tone9_metrics_dir }}"
+    - "{{ tone9_current_dir }}/services"
+    - "{{ tone9_current_dir }}/templates"
+    - "{{ tone9_current_dir }}/registries"
+    - "{{ tone9_runtime_home }}/.config/containers/systemd"
+
+- name: Sync tone9 source tree to runtime current directory
+  ansible.builtin.copy:
+    src: "{{ tone9_project_src }}/"
+    dest: "{{ tone9_current_dir }}/"
+    owner: "{{ tone9_runtime_user }}"
+    group: "{{ tone9_runtime_group }}"
+    mode: preserve
+  become: true
+
+- name: Build tone9 image rootlessly as tone9 user
+  ansible.builtin.command:
+    cmd: "podman build -t {{ tone9_image }} -f {{ tone9_current_dir }}/Containerfile {{ tone9_current_dir }}"
+  become: true
+  become_user: "{{ tone9_runtime_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u ' ~ tone9_runtime_user) }}"
+  changed_when: true
+  when: tone9_build_image | bool
+
+- name: Render tone9 Quadlet units
+  ansible.builtin.template:
+    src: "quadlet/{{ item }}.j2"
+    dest: "{{ tone9_runtime_home }}/.config/containers/systemd/{{ item }}"
+    owner: "{{ tone9_runtime_user }}"
+    group: "{{ tone9_runtime_group }}"
+    mode: "0644"
+  become: true
+  loop:
+    - tone9-gen.container
+    - tone9-gen@.container
+    - tone9.target
+  when: tone9_manage_quadlets | bool
+
+- name: Reload tone9 user systemd
+  ansible.builtin.command: "systemctl --user daemon-reload"
+  become: true
+  become_user: "{{ tone9_runtime_user }}"
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u ' ~ tone9_runtime_user) }}"
+  changed_when: true
+  when: tone9_manage_quadlets | bool

@@ -1,0 +1,20 @@
+# Count and total styling rules, v3
+version: 3
+source_fixtures:
+  - Tone IV Efsévios simple fixture
+  - Tone III St Iona/Jonah Polyeleos fixture
+  - Tone II GM Theodórou Stratilátis six-stichira fixture
+rules:
+  totals:
+    description: Totals/count summaries are underlined, not bold.
+    examples: ["10+1 total", "10+2 total", "8+2 total", "6 total", "10 total"]
+    style: count-total-field
+  paired_stichera_counts:
+    description: Bold only the leading count when it denotes paired sung stichoi and read/sung stichira.
+    examples: ["6 stichira", "4 [Oktoich.]", "3 [Minai.]", "1 Doxastik"]
+    style: count-paired-field
+    incipit_style: incipit-sung_or_var-incipit-sung_without_extra_bold
+  spoken_kanon_counts:
+    description: Kanon allocation counts are spoken/read troparion counts and are not bold.
+    examples: ["1 Resurrection", "1 Cross/Resurr.", "1 Theotokos", "3 Hierarch", "3 Greatmartyr"]
+    style: count-spoken

@@ -1,0 +1,13 @@
+# Header / service shape marker rules
+version: 1
+rules:
+  ods_marker:
+    role: derived_review_field
+    examples:
+      simple: "[ §1a – Simple svc ]"
+      six_stichira: "[ §1c – 6-stichira svc ]"
+      polyeleos: "[ §1d – Polyeleos svc ]"
+    note: "Do not confuse the ODS marker with a Gospel pericope section such as §71, §112, or §113."
+  romanization:
+    rule: "Prefer user-specified/source-language romanization for saints in the outline title."
+    examples: ["Efsévios", "Theodórou Stratilátis"]

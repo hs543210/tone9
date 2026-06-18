@@ -1,0 +1,13 @@
+# v7 boilerplate template change manifest
+version: v7_style_refinement
+base: orthodox_outline_tone_boilerplate_family_v6_user_touched
+physical_template_changes:
+  - added named text styles: count-total-field, count-spoken, count-paired-field
+  - underlined total fields in all boilerplates
+  - converted Kanon allocation numerals from variable/bold-style fields to neutral spoken-count style
+  - preserved superset optional rows; optionality is now documented in optional_slot_rules_v2.yaml
+not_changed:
+  - no incipit clipping or shortening
+  - no table redesign
+  - no removal of optional Polyeleos/Praises/second-Liturgy slots from the boilerplate family
+  - no change to core sung/spoken incipit styles

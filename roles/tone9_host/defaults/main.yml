@@ -1,0 +1,8 @@
+---
+tone9_runtime_user: tone9
+tone9_runtime_group: tone9
+tone9_state_root: /opt/tone9
+tone9_runtime_home: /opt/tone9/home
+tone9_current_dir: /opt/tone9/current
+tone9_output_dir: /opt/tone9/out
+tone9_data_dir: /opt/tone9/data

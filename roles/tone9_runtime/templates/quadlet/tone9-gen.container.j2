@@ -1,0 +1,26 @@
+[Unit]
+Description=tone9 outline generator - current service
+Wants=network-online.target
+After=network-online.target
+RequiresMountsFor={{ tone9_current_dir }} {{ tone9_output_dir }} {{ tone9_data_dir }}
+
+[Service]
+Type=oneshot
+TimeoutStartSec=900
+CPUAccounting=true
+MemoryAccounting=true
+IOAccounting=true
+TasksAccounting=true
+
+[Container]
+ContainerName=tone9-gen
+Image={{ tone9_image }}
+UserNS=keep-id
+WorkingDir=/work
+Volume={{ tone9_current_dir }}:/work:Z
+Volume={{ tone9_output_dir }}:/out:Z
+Volume={{ tone9_data_dir }}:/data:Z
+Exec=generate --service /work/services/current.yaml --out /out/current.odt --pdf --audit --metrics /work/metrics/tone9.prom
+
+[Install]
+WantedBy=default.target

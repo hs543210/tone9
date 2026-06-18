@@ -1,0 +1,25 @@
+# Generator roadmap
+version: 1
+recommended_direction: cli_generator_plus_odt_template
+source_of_truth:
+  template_skeleton: "one neutral ODT skeleton / style package"
+  registries:
+    - tone_static_oktoichos
+    - matins_gospel_cycle
+    - service_shape_classifier
+    - optional_slot_rules
+    - count_style_rules
+    - layout_tab_profiles
+    - local_conventions
+  per_service_overlay: "small YAML/JSON sidecar produced from calendar + rubrics + Minaion + Liturgy extraction, then human-reviewed"
+outputs:
+  - review_odt_with_highlights
+  - print_odt_without_highlights
+  - pdf_export
+why_not_macro_first:
+  - LibreOffice macros are harder to version-control and audit
+  - CLI rendering and diffing is easier to test
+  - sidecar metadata makes human review explicit
+  - ODT remains the print artifact, but not the only source of truth
+future_optional_macro:
+  role: "convenience wrapper around the same sidecar/generator model"

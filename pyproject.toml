@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tone9"
+version = "0.1.0"
+description = "Headless Orthodox weekly outline generator/runtime"
+requires-python = ">=3.10"
+dependencies = [
+  "lxml>=5.0",
+  "PyYAML>=6.0",
+]
+
+[project.scripts]
+tone9 = "outline_gen.cli:main"
+
+[tool.setuptools]
+packages = ["outline_gen", "outline_gen.odt"]

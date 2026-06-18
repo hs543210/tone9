@@ -1,0 +1,13 @@
+---
+tone9_runtime_user: tone9
+tone9_runtime_group: tone9
+tone9_state_root: /opt/tone9
+tone9_runtime_home: /opt/tone9/home
+tone9_current_dir: /opt/tone9/current
+tone9_output_dir: /opt/tone9/out
+tone9_data_dir: /opt/tone9/data
+tone9_metrics_dir: /opt/tone9/current/metrics
+tone9_image: localhost/tone9/outline-gen:dev
+tone9_build_image: true
+tone9_manage_quadlets: true
+tone9_project_src: "{{ playbook_dir }}/.."

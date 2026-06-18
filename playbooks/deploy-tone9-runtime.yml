@@ -1,0 +1,5 @@
+---
+- name: Deploy tone9 runtime
+  hosts: all
+  roles:
+    - tone9_runtime

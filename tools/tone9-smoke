@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p out metrics
+python3 -m outline_gen.cli generate --service services/current.yaml --out out/current.odt --audit --metrics metrics/tone9.prom
+cat out/current.audit.md
+cat metrics/tone9.prom
