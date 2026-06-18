@@ -1,0 +1,44 @@
+service:
+  date: 2026-06-22
+  title: "HM Efsévios of Samosata"
+  week_tone: IV
+  matins_gospel:
+    number: V
+    reference: "Lk 24:12-35"
+    section: "§113"
+  ods_rank: "§1a"
+  rank_label: "Simple svc"
+  header_marker: "[ §1a – Simple svc ]"
+
+source_inputs:
+  rubrics: "rub_june22_t4(2).htm"
+  liturgy: "lit_june22_t4(2).htm"
+  minaion: "minaion Efsévios of Samosata(1).odt"
+  user_touched_authority: "outline_2026-06-22_Tone_IV_HM_Efsevios_trial_v2_user_touched(1).odt"
+
+local_generation_rules_applied:
+  service_rank_marker: "Header uses ODS §1a Simple svc; do not substitute the Matins Gospel pericope section §113 for the service-rank marker."
+  transliteration: "Use preferred source-language romanization: Efsévios, not Eusebius."
+  vespers_readings: "Omit 3 Readings row when not found in the Minaion/rubrics."
+  lord_i_cried_count: "10+1 total: 7 Oktoichos + 3 Minaion + combined Glory/Now Dogmatic. Use +2 only when Glory and Now are separate lines."
+  totals_style: "Totals/counts are review fields and should be underlined, not bolded."
+  aposticha: "No saint Aposticha supplied; use boilerplate Oktoichos Aposticha only."
+  god_is_the_lord_theotokion: "Tone follows preceding verse; for this service it is Tone IV, so boilerplate Theotokion is used and the duplicate after first Psalter is omitted."
+  matins_gospel: "Gospel V supplies Gospel incipit, Exapostilarion, Theotokion, and Evangelical Sticheron V."
+  saint_exapostilarion: "Omitted because this Minaion does not supply one."
+  praises: "No Minaion Praises. Use Oktoichos as 7 stichera plus 1 Oktoichos Doxastik, then separate Glory Gospel sticheron and Now Theotokion, therefore 8+2 total."
+  hours: "Single 1st/3rd/6th block; no alternating 3rd Hour rule."
+  liturgy_labels: "Singular labels because there are no second Prokeimenon, Alleluia, or Communion stichos."
+
+slot_overrides:
+  header.service_rank_marker: "§1a"
+  vespers.readings: omit
+  vespers.lord_i_cried.total_label: "10+1 total"
+  praises.total_label: "8+2 total"
+  praises.oktoichos_stichera_count: 7
+  praises.oktoichos_doxastik_count: 1
+  praises.glory_now_lines: separate
+  hours.block: combined_1st_3rd_6th
+  liturgy.prokeimenon.label: singular
+  liturgy.alleluia.label: singular
+  liturgy.communion.label: singular

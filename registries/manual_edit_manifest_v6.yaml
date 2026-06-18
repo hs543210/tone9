@@ -1,0 +1,40 @@
+version: 6
+name: orthodox_outline_tone_boilerplate_family_v6_user_touched
+source: user-corrected ODT/PDF upload
+purpose: >-
+  Preserve the user's hand-corrected Tone I-VIII boilerplate templates as the
+  new authority after manual repairs to theotokia, Praises, Kontakion/Ikos,
+  truncated words, and tab alignment.
+
+included_authorities:
+  odt_templates:
+    - templates/boilerplate/outline_Tone_I_boilerplate_v6.odt
+    - templates/boilerplate/outline_Tone_II_boilerplate_v6.odt
+    - templates/boilerplate/outline_Tone_III_boilerplate_v6.odt
+    - templates/boilerplate/outline_Tone_IV_boilerplate_v6.odt
+    - templates/boilerplate/outline_Tone_V_boilerplate_v6.odt
+    - templates/boilerplate/outline_Tone_VI_boilerplate_v6.odt
+    - templates/boilerplate/outline_Tone_VII_boilerplate_v6.odt
+    - templates/boilerplate/outline_Tone_VIII_boilerplate_v6.odt
+  user_exported_pdfs:
+    path: renders/user_exported/
+    export_command_reported_by_user: "for i in *odt ; do soffice --headless --convert-to pdf pdf:\"writer_pdf_Export\"  $i ; done"
+  assistant_reexported_pdfs:
+    path: renders/assistant_exported/
+    purpose: verify that uploaded ODTs render cleanly in the sandbox using the same PDF export filter.
+
+policy_correction_from_v4:
+  - Do not fix fit by clipping characters.
+  - Do not fix fit by dropping final words.
+  - Preserve the full intended incipit text and solve alignment with tabs/layout.
+  - Treat these user-edited ODTs as the current boilerplate authority.
+
+render_status:
+  user_exported_pdfs: all 2 pages
+  assistant_reexported_pdfs: all 2 pages
+
+style_status:
+  named_styles_xml: shared across all eight ODTs
+  content_automatic_styles: intentionally different across tones after manual tab/layout edits
+  exact_bare_var_incipit: 0
+  cue_only_text_in_incipit_spans: 0

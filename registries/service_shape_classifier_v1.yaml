@@ -1,0 +1,24 @@
+service_shape_classifier:
+  principle: "ODS marker is inferred/reviewed after outline assembly; rubrics usually do not provide it explicitly."
+  outputs:
+    - proposed_ods_variant
+    - confidence
+    - evidence
+    - review_required
+  fixture_rules:
+    §1a_simple:
+      indicators:
+        - single principal saint
+        - no Polyeleos/Megalynarion
+        - no saint Praises
+        - no second Liturgy Prokeimenon/Alleluia/Communion
+        - combined Hours block likely
+      fixture: tone_iv_hm_efsevios_simple_2026_06_22
+    §1d_polyeleos:
+      indicators:
+        - Polyeleos row present
+        - Megalynarion present
+        - saint sessional block after Ypakoi present
+        - often readings and second Liturgy items present
+        - split Hours possible
+      fixture: tone_iii_st_iona_polyeleos_2026_06_28

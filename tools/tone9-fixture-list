@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import yaml
+
+manifest = Path("registries/live_fixture_manifest_v2.yaml")
+if not manifest.exists():
+    raise SystemExit(f"missing {manifest}")
+
+data = yaml.safe_load(manifest.read_text())
+for f in data.get("fixtures", []):
+    print(f"{f['id']}: {f['service_shape']} | Tone {f['tone']} | {f['title']}")
+    print(f"  outline: {f['final_outline']}")
+    print(f"  overlay: {f['service_overlay']}")

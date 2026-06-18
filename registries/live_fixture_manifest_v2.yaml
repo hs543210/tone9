@@ -1,0 +1,48 @@
+version: live_fixture_manifest_v2
+purpose: >-
+  User-approved or user-touched weekly outline fixtures that define tone9's
+  first regression surface: simple, six-stichira/doxologia, and Polyeleos
+  service shapes.
+fixtures:
+  - id: tone_ii_gm_theodorou_six_stichira_2026_06_08
+    date: 2026-06-08
+    tone: II
+    title: "GM Theodórou Stratilátis"
+    service_shape: "§1c – 6-stichira svc"
+    final_outline: fixtures/live/2026-06-08-tone-ii-theodorou/outline.odt
+    service_overlay: fixtures/live/2026-06-08-tone-ii-theodorou/service_overlay.yaml
+    source_fixture_dir: fixtures/source/2026-06-08-tone-ii-theodorou
+    status: user-touched print candidate
+    use_as:
+      - six_stichira_layout_regression
+      - liturgy_plural_labels_regression
+      - kanon_spoken_count_style_regression
+      - praises_oktoichos_doxastik_regression
+  - id: tone_iv_hm_efsevios_simple_2026_06_22
+    date: 2026-06-22
+    tone: IV
+    title: "HM Efsévios of Samosata"
+    service_shape: "§1a – Simple svc"
+    final_outline: fixtures/live/2026-06-22-tone-iv-efsevios/outline.odt
+    service_overlay: fixtures/live/2026-06-22-tone-iv-efsevios/service_overlay.yaml
+    source_fixture_dir: fixtures/source/2026-06-22-tone-iv-efsevios
+    status: user-touched print candidate
+    use_as:
+      - simple_service_layout_regression
+      - liturgy_singular_labels_regression
+      - combined_glory_now_regression
+      - no_saint_exapostilarion_regression
+  - id: tone_iii_st_iona_polyeleos_2026_06_28
+    date: 2026-06-28
+    tone: III
+    title: "St Iona, Metr. Moscow + All Russia"
+    service_shape: "§1d – Polyeleos svc"
+    final_outline: fixtures/live/2026-06-28-tone-iii-iona-polyeleos/outline.odt
+    service_overlay: fixtures/live/2026-06-28-tone-iii-iona-polyeleos/service_overlay.yaml
+    source_fixture_dir: fixtures/source/2026-06-28-tone-iii-iona-polyeleos
+    status: user-touched print candidate
+    use_as:
+      - polyeleos_layout_regression
+      - split_hours_regression
+      - saint_sessionals_after_ypakoi_regression
+      - stichoi_for_7_and_8_regression

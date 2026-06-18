@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+from pathlib import Path
+from zipfile import ZipFile, BadZipFile
+import sys
+import yaml
+
+manifest = Path("registries/live_fixture_manifest_v2.yaml")
+if not manifest.exists():
+    print(f"missing {manifest}", file=sys.stderr)
+    sys.exit(1)
+
+data = yaml.safe_load(manifest.read_text())
+failed = False
+for f in data.get("fixtures", []):
+    outline = Path(f["final_outline"])
+    overlay = Path(f["service_overlay"])
+    print(f"--- {f['id']}")
+    if not outline.exists():
+        print(f"missing outline: {outline}")
+        failed = True
+        continue
+    if not overlay.exists():
+        print(f"missing overlay: {overlay}")
+        failed = True
+    try:
+        with ZipFile(outline) as zf:
+            names = set(zf.namelist())
+            ok = {"content.xml", "styles.xml"}.issubset(names)
+            content = zf.read("content.xml").decode("utf-8", errors="ignore") if "content.xml" in names else ""
+            styles = zf.read("styles.xml").decode("utf-8", errors="ignore") if "styles.xml" in names else ""
+            bare = content.count('style:name="var-incipit"') + styles.count('style:name="var-incipit"')
+            print(f"zip_ok={ok} size={outline.stat().st_size} bare_var_incipit={bare}")
+            if not ok or bare:
+                failed = True
+    except BadZipFile:
+        print("not a valid ODT zip")
+        failed = True
+
+sys.exit(1 if failed else 0)

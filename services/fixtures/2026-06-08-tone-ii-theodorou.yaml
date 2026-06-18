@@ -1,0 +1,69 @@
+service:
+  date: 2026-06-08
+  title: "GM Theodórou Stratilátis"
+  week_tone: II
+  matins_gospel:
+    number: III
+    reference: "Mk 16:9-20"
+    section: "§71"
+  proposed_ods_rank: "§1c"
+  rank_label: "Six-stichira svc"
+  rank_confidence: review
+
+base_template:
+  source: "v6 Tone II boilerplate"
+
+source_inputs:
+  rubrics: "rub_june08(1).htm"
+  minaion: "minaion Theodórou Stratilátis(1).odt"
+  liturgy: "lit_june08(1).htm"
+
+shape_rules_exercised:
+  vespers:
+    lord_i_cried_total: "10+2 total"
+    oktoichos_stichera: 6
+    minaion_stichera: 4
+    glory: "Minaion Tone V"
+    now: "Oktoichos Tone II Dogmatic"
+    readings: 0
+    aposticha_glory: true
+    aposticha_now_tone_follows_glory: VIII
+  matins:
+    psalm_118: true
+    polyeleos: false
+    saint_sessionals_after_ypakoi: false
+    matins_gospel_cycle: III
+  canon:
+    compact_total: 6
+    allocation: "1 Resurrection, 1 Cross/Resurrection, 1 Theotokos, 3 Great Martyr"
+    after_ode_iii: "Minaion Kontakion + Ikos + Sessional hymn + Theotokion"
+    after_ode_vi: "Oktoichos Kontakion + Ikos"
+  praises:
+    total: "8+2 total"
+    oktoichos: 7
+    oktoichos_doxastik: 1
+    minaion: 0
+    glory: "Evangelical Sticheron III"
+    now: "Most blessed art thou"
+  hours:
+    combined_1st_3rd_6th: true
+  liturgy:
+    beatitudes_total: 10
+    oktoichos_beatitudes: 6
+    minaion_beatitudes: 4
+    second_prokeimenon: true
+    second_alleluia: true
+    second_communion_stichos: true
+
+review_notes:
+  - "This is an automated first trial from the v6 Tone II boilerplate; expect manual touchup."
+  - "Name form Theodórou/Theódoros Stratilátis remains a romanization review item."
+
+user_touchups_v2:
+  rank_marker: "format-painted [ §1c – 6-stichira svc ]"
+  kanon_minaion_line: "3 Greatmartyr [Minai.] ‘Holy great martyr Theodore, pray to God for us’"
+  stichoi_for_7_8_empty_cells: omitted
+  kanon_counts: "unbolded because spoken counts, not sung stichoi/stichira counts"
+  totals_style: "underlined/underscore rather than bold"
+  tab_geometry: "manually adjusted"
+  live_use_status: "usable after removing highlighting"
