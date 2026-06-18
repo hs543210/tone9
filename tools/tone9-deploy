@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+ansible-playbook -i inventory.ini playbooks/deploy-tone9-runtime.yml -K

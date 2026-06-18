@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 out/
 rendered/
 .tmp/
@@ -9,8 +10,7 @@ rendered/
 group_vars/all/vault.yml
 .DS_Store
 
-# Generated/local Python packaging artifacts
+# Local/generated runtime artifacts
 metrics/
 *.egg-info/
-
 inventory.ini

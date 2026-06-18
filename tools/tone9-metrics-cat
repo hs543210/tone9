@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cat /opt/tone9/current/metrics/tone9.prom

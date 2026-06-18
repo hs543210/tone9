@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+find -L /opt/tone9 -maxdepth "${1:-3}" -printf '%M %u:%g %p\n' | sort

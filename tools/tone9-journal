@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+TONE9_UID="$(id -u tone9)"
+exec sudo -u tone9 \
+  XDG_RUNTIME_DIR="/run/user/$TONE9_UID" \
+  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$TONE9_UID/bus" \
+  sh -c 'cd /opt/tone9 && journalctl --user -u tone9-gen.service -n "${1:-120}" --no-pager'
