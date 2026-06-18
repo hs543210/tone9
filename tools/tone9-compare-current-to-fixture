@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+fixture="${1:?usage: tools/tone9-compare-current-to-fixture fixtures/live/<fixture>/outline.odt [actual.odt]}"
+actual="${2:-out/current.odt}"
+outdir="${3:-out/visual_compare}"
+exec python3 -m outline_gen.visual_compare \
+  --expected "$fixture" \
+  --actual "$actual" \
+  --outdir "$outdir" \
+  --libreoffice-profile .tmp/libreoffice-visual-compare
