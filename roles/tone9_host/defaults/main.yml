@@ -6,3 +6,10 @@ tone9_runtime_home: /opt/tone9/home
 tone9_current_dir: /opt/tone9/current
 tone9_output_dir: /opt/tone9/out
 tone9_data_dir: /opt/tone9/data
+
+# Rootless Podman needs subordinate UID/GID ranges for clean user namespace mapping.
+# These ranges should not overlap any existing ranges in /etc/subuid or /etc/subgid.
+tone9_subuid_start: 231072
+tone9_subuid_count: 65536
+tone9_subgid_start: 231072
+tone9_subgid_count: 65536

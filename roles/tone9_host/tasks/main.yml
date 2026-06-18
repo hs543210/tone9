@@ -13,6 +13,31 @@
     system: true
     shell: /usr/sbin/nologin
 
+- name: Check tone9 subordinate UID range
+  ansible.builtin.command:
+    cmd: "grep -E '^{{ tone9_runtime_user }}:' /etc/subuid"
+  register: tone9_subuid_entry
+  changed_when: false
+  failed_when: false
+
+- name: Check tone9 subordinate GID range
+  ansible.builtin.command:
+    cmd: "grep -E '^{{ tone9_runtime_user }}:' /etc/subgid"
+  register: tone9_subgid_entry
+  changed_when: false
+  failed_when: false
+
+- name: Ensure tone9 subordinate UID/GID ranges exist
+  ansible.builtin.command:
+    cmd: >-
+      usermod
+      --add-subuids {{ tone9_subuid_start }}-{{ tone9_subuid_start + tone9_subuid_count - 1 }}
+      --add-subgids {{ tone9_subgid_start }}-{{ tone9_subgid_start + tone9_subgid_count - 1 }}
+      {{ tone9_runtime_user }}
+  changed_when: true
+  when:
+    - tone9_subuid_entry.rc != 0 or tone9_subgid_entry.rc != 0
+
 - name: Ensure tone9 runtime directories exist
   ansible.builtin.file:
     path: "{{ item }}"
@@ -27,6 +52,8 @@
     - "{{ tone9_output_dir }}"
     - "{{ tone9_data_dir }}"
     - "{{ tone9_current_dir }}/metrics"
+    - "{{ tone9_data_dir }}/cache"
+    - "{{ tone9_data_dir }}/libreoffice-profile"
     - "{{ tone9_runtime_home }}/.config/containers/systemd"
 
 - name: Check linger state for tone9 user
@@ -37,4 +64,5 @@
 
 - name: Enable linger for tone9 user
   ansible.builtin.command: "loginctl enable-linger {{ tone9_runtime_user }}"
+  changed_when: true
   when: tone9_linger.stdout | default('no') != 'yes'
