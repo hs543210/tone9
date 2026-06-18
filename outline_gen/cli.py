@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import shutil
 import sys
 import time
 from pathlib import Path
@@ -10,6 +9,8 @@ import yaml
 
 from .audit import audit_odt, write_markdown_audit
 from .render import pdf_page_count, render_pdf, render_png_pages
+from .service_schema import validate_service_overlay
+from .slot_fill import fill_safe_slots
 
 TONE_NAMES = {
     "I": "I", "1": "I",
@@ -92,15 +93,36 @@ def cmd_generate(args: argparse.Namespace) -> int:
     ok = False
     audit_data: dict = {}
     try:
-        service = load_yaml(Path(args.service))
+        service_path = Path(args.service)
+        validation = validate_service_overlay(service_path)
+        if not validation.ok:
+            for error in validation.errors:
+                print(f"ERROR: {error}", file=sys.stderr)
+            for warning in validation.warnings:
+                print(f"WARN: {warning}", file=sys.stderr)
+            raise SystemExit(1)
+
+        service = load_yaml(service_path)
         tone = norm_tone(service_tone(service))
         root = Path(args.root).resolve() if args.root else repo_root()
         template = Path(args.template).resolve() if args.template else default_template_for_tone(tone, root)
         out = Path(args.out).resolve()
         out.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(template, out)
+
+        slot_fill = fill_safe_slots(template, out, service, root)
         audit_data = audit_odt(out).to_dict()
-        audit_data.update({"service": str(Path(args.service)), "tone": tone, "template": str(template), "output": str(out)})
+        audit_data.update(
+            {
+                "service": str(service_path),
+                "tone": tone,
+                "template": str(template),
+                "output": str(out),
+                "service_validation_ok": validation.ok,
+                "service_validation_warnings": validation.warnings,
+                "slot_fill_count": slot_fill.count,
+                "slot_fill_changes": [c.to_dict() for c in slot_fill.changes],
+            }
+        )
         if args.pdf:
             pdf = render_pdf(out, out.parent, Path(args.libreoffice_profile) if args.libreoffice_profile else None)
             audit_data["pdf"] = str(pdf)
