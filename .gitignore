@@ -12,3 +12,5 @@ group_vars/all/vault.yml
 # Generated/local Python packaging artifacts
 metrics/
 *.egg-info/
+
+inventory.ini
