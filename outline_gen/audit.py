@@ -20,6 +20,20 @@ class OdtAudit:
         return asdict(self)
 
 
+def count_applied_bare_var_incipit(content_xml: str) -> int:
+    """Count applied uses of the legacy bare var-incipit style.
+
+    We intentionally do NOT count style definitions in styles.xml. Some old ODTs
+    may retain a named style definition called `var-incipit`; the rule we care
+    about is whether visible text uses it directly instead of semantic styles
+    such as `var-incipit-sung` or `var-incipit-spoken`.
+    """
+    return (
+        content_xml.count('text:style-name="var-incipit"')
+        + content_xml.count("text:style-name='var-incipit'")
+    )
+
+
 def audit_odt(path: Path) -> OdtAudit:
     path = Path(path)
     audit = OdtAudit(odt_exists=path.exists(), odt_size_bytes=path.stat().st_size if path.exists() else 0)
@@ -35,8 +49,8 @@ def audit_odt(path: Path) -> OdtAudit:
             styles = zf.read("styles.xml") if audit.has_styles_xml else b""
             audit.content_xml_bytes = len(content)
             audit.styles_xml_bytes = len(styles)
-            text = content.decode("utf-8", errors="ignore") + styles.decode("utf-8", errors="ignore")
-            audit.bare_var_incipit_count = text.count('text:style-name="var-incipit"') + text.count('style:name="var-incipit"')
+            content_text = content.decode("utf-8", errors="ignore")
+            audit.bare_var_incipit_count = count_applied_bare_var_incipit(content_text)
     except BadZipFile:
         audit.zip_ok = False
     return audit

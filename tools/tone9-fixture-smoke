@@ -27,8 +27,8 @@ for f in data.get("fixtures", []):
             names = set(zf.namelist())
             ok = {"content.xml", "styles.xml"}.issubset(names)
             content = zf.read("content.xml").decode("utf-8", errors="ignore") if "content.xml" in names else ""
-            styles = zf.read("styles.xml").decode("utf-8", errors="ignore") if "styles.xml" in names else ""
-            bare = content.count('style:name="var-incipit"') + styles.count('style:name="var-incipit"')
+            # Count applied text style references only; do not count a style definition in styles.xml.
+            bare = content.count('text:style-name="var-incipit"') + content.count("text:style-name='var-incipit'")
             print(f"zip_ok={ok} size={outline.stat().st_size} bare_var_incipit={bare}")
             if not ok or bare:
                 failed = True
