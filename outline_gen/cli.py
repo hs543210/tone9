@@ -11,6 +11,13 @@ from .audit import audit_odt, write_markdown_audit
 from .render import pdf_page_count, render_pdf, render_png_pages
 from .service_schema import validate_service_overlay
 from .slot_fill import fill_safe_slots
+from .fixture_runner import (
+    compare_fixture,
+    generate_fixture,
+    load_manifest,
+    write_compare_summary,
+    write_generation_summary,
+)
 
 TONE_NAMES = {
     "I": "I", "1": "I",
@@ -88,41 +95,47 @@ tone9_bare_var_incipit_count {bare}
     metrics_path.write_text(metrics, encoding="utf-8")
 
 
+def generate_odt_from_service(service_path: Path, out: Path, *, root: Path, template: Path | None = None) -> dict:
+    validation = validate_service_overlay(service_path)
+    if not validation.ok:
+        for error in validation.errors:
+            print(f"ERROR: {error}", file=sys.stderr)
+        for warning in validation.warnings:
+            print(f"WARN: {warning}", file=sys.stderr)
+        raise SystemExit(1)
+
+    service = load_yaml(service_path)
+    tone = norm_tone(service_tone(service))
+    selected_template = template if template else default_template_for_tone(tone, root)
+    out = Path(out).resolve()
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    slot_fill = fill_safe_slots(selected_template, out, service, root)
+    audit_data = audit_odt(out).to_dict()
+    audit_data.update(
+        {
+            "service": str(service_path),
+            "tone": tone,
+            "template": str(selected_template),
+            "output": str(out),
+            "service_validation_ok": validation.ok,
+            "service_validation_warnings": validation.warnings,
+            "slot_fill_count": slot_fill.count,
+            "slot_fill_changes": [c.to_dict() for c in slot_fill.changes],
+        }
+    )
+    return audit_data
+
+
 def cmd_generate(args: argparse.Namespace) -> int:
     started = time.time()
     ok = False
     audit_data: dict = {}
     try:
-        service_path = Path(args.service)
-        validation = validate_service_overlay(service_path)
-        if not validation.ok:
-            for error in validation.errors:
-                print(f"ERROR: {error}", file=sys.stderr)
-            for warning in validation.warnings:
-                print(f"WARN: {warning}", file=sys.stderr)
-            raise SystemExit(1)
-
-        service = load_yaml(service_path)
-        tone = norm_tone(service_tone(service))
         root = Path(args.root).resolve() if args.root else repo_root()
-        template = Path(args.template).resolve() if args.template else default_template_for_tone(tone, root)
+        template = Path(args.template).resolve() if args.template else None
         out = Path(args.out).resolve()
-        out.parent.mkdir(parents=True, exist_ok=True)
-
-        slot_fill = fill_safe_slots(template, out, service, root)
-        audit_data = audit_odt(out).to_dict()
-        audit_data.update(
-            {
-                "service": str(service_path),
-                "tone": tone,
-                "template": str(template),
-                "output": str(out),
-                "service_validation_ok": validation.ok,
-                "service_validation_warnings": validation.warnings,
-                "slot_fill_count": slot_fill.count,
-                "slot_fill_changes": [c.to_dict() for c in slot_fill.changes],
-            }
-        )
+        audit_data = generate_odt_from_service(Path(args.service), out, root=root, template=template)
         if args.pdf:
             pdf = render_pdf(out, out.parent, Path(args.libreoffice_profile) if args.libreoffice_profile else None)
             audit_data["pdf"] = str(pdf)
@@ -176,6 +189,55 @@ def cmd_fixture_smoke(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
+def cmd_generate_fixtures(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve() if args.root else repo_root()
+    outdir = Path(args.outdir)
+    profile = Path(args.libreoffice_profile) if args.libreoffice_profile else None
+    fixtures = load_manifest(Path(args.manifest))
+
+    def generate_one(service: Path, out: Path) -> dict:
+        return generate_odt_from_service(service, out, root=root)
+
+    results = [
+        generate_fixture(f, root=root, outdir=outdir, generate_one=generate_one, pdf=args.pdf, libreoffice_profile=profile)
+        for f in fixtures
+    ]
+    summary = outdir / "generated_fixture_summary.md"
+    write_generation_summary(results, summary)
+    print(summary)
+    failed = any((not r.audit.get("zip_ok")) or r.audit.get("bare_var_incipit_count") for r in results)
+    return 1 if failed else 0
+
+
+def cmd_fixture_regression(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve() if args.root else repo_root()
+    generated_outdir = Path(args.generated_outdir)
+    compare_outdir = Path(args.compare_outdir)
+    profile = Path(args.libreoffice_profile) if args.libreoffice_profile else None
+    fixtures = load_manifest(Path(args.manifest))
+
+    def generate_one(service: Path, out: Path) -> dict:
+        return generate_odt_from_service(service, out, root=root)
+
+    generations = [
+        generate_fixture(f, root=root, outdir=generated_outdir, generate_one=generate_one, pdf=False, libreoffice_profile=profile)
+        for f in fixtures
+    ]
+    write_generation_summary(generations, generated_outdir / "generated_fixture_summary.md")
+
+    comparisons = [
+        compare_fixture(f, generated_outdir=generated_outdir, compare_outdir=compare_outdir, libreoffice_profile=profile)
+        for f in fixtures
+    ]
+    summary = compare_outdir / "fixture_regression_summary.md"
+    write_compare_summary(comparisons, summary)
+    print(summary)
+
+    failed = any((not r.audit.get("zip_ok")) or r.audit.get("bare_var_incipit_count") for r in generations)
+    failed = failed or any(not c.page_count_match for c in comparisons)
+    return 1 if failed else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="tone9")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -212,6 +274,22 @@ def build_parser() -> argparse.ArgumentParser:
     fs = sub.add_parser("fixture-smoke")
     fs.add_argument("--manifest", default="registries/live_fixture_manifest_v2.yaml")
     fs.set_defaults(func=cmd_fixture_smoke)
+
+    gf = sub.add_parser("generate-fixtures")
+    gf.add_argument("--manifest", default="registries/live_fixture_manifest_v2.yaml")
+    gf.add_argument("--outdir", default="out/generated-fixtures")
+    gf.add_argument("--root")
+    gf.add_argument("--pdf", action="store_true")
+    gf.add_argument("--libreoffice-profile")
+    gf.set_defaults(func=cmd_generate_fixtures)
+
+    fr = sub.add_parser("fixture-regression")
+    fr.add_argument("--manifest", default="registries/live_fixture_manifest_v2.yaml")
+    fr.add_argument("--generated-outdir", default="out/generated-fixtures")
+    fr.add_argument("--compare-outdir", default="out/fixture-regression")
+    fr.add_argument("--root")
+    fr.add_argument("--libreoffice-profile")
+    fr.set_defaults(func=cmd_fixture_regression)
 
     return p
 

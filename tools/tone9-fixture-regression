@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+exec python3 -m outline_gen.cli fixture-regression \
+  --libreoffice-profile .tmp/libreoffice-fixture-regression \
+  "$@"

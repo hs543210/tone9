@@ -1,6 +1,6 @@
 # Next batch plan
 
-## Batch 010: first safe slot fill — done in patch batch
+## Batch 010: first safe slot fill — done
 
 Implemented conservative service-sidecar driven fills for:
 
@@ -9,36 +9,48 @@ Implemented conservative service-sidecar driven fills for:
 - `header.service_rank_marker`
 - `matins.gospel_cycle`
 
-Guardrails now in place:
+## Batch 011: generated-fixture runner — done
 
-- `tone9 generate` validates the reviewed service overlay before writing ODT output.
-- Slot fill is limited to known v8 boilerplate paragraphs/placeholders.
-- Styles are preserved by replacing text nodes inside existing ODT XML spans.
-- Generation audit records validation status plus exact slot changes.
-- Tests cover all three reviewed fixture sidecars and invalid-service rejection.
+Implemented:
 
-Still intentionally not implemented:
+- `tone9 generate-fixtures`
+- `tools/tone9-generate-fixtures`
+- manifest-driven generation into `out/generated-fixtures/<fixture>/outline.odt`
+- `out/generated-fixtures/generated_fixture_summary.md`
 
-- row deletion
-- table surgery
-- automatic incipit shortening
-- arbitrary ODT text replacement outside known safe slots
+The runner validates each reviewed sidecar through the normal `tone9 generate` path.
 
-## Batch 011: generated-fixture regression runner
+## Batch 012: fixture visual regression runner — done
 
-- Add a runner that generates each `services/fixtures/*.yaml` sidecar into
-  `out/generated-fixtures/<fixture>/outline.odt`.
-- Optionally render generated ODTs to PDF/PNG.
-- Compare generated fixture outputs against approved live fixtures.
-- Keep comparison non-blocking at first except for ODT validity and page-count
-  mismatch.
+Implemented:
 
-## Batch 012: first structural shape pass
+- `tone9 fixture-regression`
+- `tools/tone9-fixture-regression`
+- generation of all manifest fixtures before compare
+- visual compare of generated ODTs against approved live ODT fixtures
+- `out/fixture-regression/fixture_regression_summary.md`
+- failure on ODT/audit failure or page-count mismatch
 
-Start with one low-risk omit/fill decision after explicit anchors and tests.
-Likely candidates:
+The visual delta is expected to remain non-zero until structural slots are filled.
 
-- simple-service Vespers readings omission; or
-- saint Exapostilarion omission/fill.
+## Batch 013: first structural shape pass — done
 
-Do not begin broad row deletion until the generated-fixture runner exists.
+Implemented one explicit low-risk structural omission:
+
+- `vespers.readings: omit` removes the Vespers 3 Readings placeholder paragraph.
+
+This is intentionally explicit-only. It does not yet infer omission from
+`shape_rules_exercised.vespers.readings: 0`.
+
+## Next recommended batch: structural shape pass 2
+
+Candidate targets, in order:
+
+1. simple-service saint Exapostilarion omission;
+2. simple-service combined Glory/Now Dogmatic line;
+3. singular/plural Liturgy labels;
+4. Theodorou explicit Vespers readings omission, after adding/confirming a slot
+   override.
+
+Avoid broad table surgery until each omission/fill has a dedicated anchor and a
+fixture test.

@@ -1,44 +1,48 @@
-# Visual QA and regression workflow
+# Visual QA
 
-The reliable tone9 layout workflow is render-first:
+Visual QA compares generated ODT/PDF output against user-approved fixture ODTs.
+
+## One-off compare
+
+```bash
+ tools/tone9-render-current
+ tools/tone9-compare-current-to-fixture \
+   fixtures/live/2026-06-22-tone-iv-efsevios/outline.odt \
+   out/current.odt \
+   out/visual_compare/efsevios
+```
+
+## Manifest-wide generated fixture pass
+
+```bash
+ tools/tone9-generate-fixtures
+```
+
+This writes generated ODTs under:
 
 ```text
-ODT -> PDF -> PNG pages -> image/contact-sheet review -> report
+out/generated-fixtures/<fixture-id>/outline.odt
 ```
 
-Batch 008 adds a visual comparison helper that can compare either ODT or PDF
-inputs. For ODT input, it renders both documents with LibreOffice first. Then it
-renders the PDFs to PNG pages and creates:
+and writes a summary:
 
-- `visual_compare_report.md`
-- `visual_compare_report.json`
-- `contact_sheet_expected_actual_diff.png`
-- per-page diff PNGs under `diff_png/`
+```text
+out/generated-fixtures/generated_fixture_summary.md
+```
 
-## Compare two ODTs
+## Manifest-wide visual regression
 
 ```bash
-tools/tone9-visual-compare \
-  --expected fixtures/live/2026-06-22-tone-iv-efsevios/outline.odt \
-  --actual out/current.odt \
-  --outdir out/visual_compare/efsevios
+ tools/tone9-fixture-regression
 ```
 
-## Compare current output to a fixture
+This generates all manifest fixtures, compares them against the approved live
+fixtures, and writes:
 
-```bash
-tools/tone9-compare-current-to-fixture \
-  fixtures/live/2026-06-22-tone-iv-efsevios/outline.odt \
-  out/current.odt \
-  out/visual_compare/efsevios
+```text
+out/fixture-regression/fixture_regression_summary.md
 ```
 
-## How to interpret results
-
-- Page count mismatch is a hard failure.
-- Very small pixel changes may be antialiasing/render noise.
-- Large bounding boxes or high changed-percent values usually mean layout drift.
-- The contact sheet is intended for quick visual review: expected, actual, diff.
-
-Use this workflow before accepting any slot-fill or row-omit change that touches
-ODT layout.
+The command fails on invalid generated ODTs, applied bare `var-incipit`, or page
+count mismatch. Non-zero visual deltas are expected until more structural slots
+are implemented.

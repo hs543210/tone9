@@ -21,10 +21,11 @@ def odt_paragraphs(path: Path) -> list[str]:
 
 
 @pytest.mark.parametrize(
-    ("service", "expected"),
+    ("service", "slot_count", "expected"),
     [
         (
             "2026-06-08-tone-ii-theodorou.yaml",
+            10,
             [
                 "GM Theodórou Stratilátis",
                 "Matins Gospel III: Mk 16:9-20 (§71)",
@@ -36,6 +37,7 @@ def odt_paragraphs(path: Path) -> list[str]:
         ),
         (
             "2026-06-22-tone-iv-efsevios.yaml",
+            11,
             [
                 "HM Efsévios of Samosata",
                 "Matins Gospel V: Lk 24:12-35 (§113)",
@@ -47,6 +49,7 @@ def odt_paragraphs(path: Path) -> list[str]:
         ),
         (
             "2026-06-28-tone-iii-iona-polyeleos.yaml",
+            10,
             [
                 "St Iona, Metr. Moscow + All Russia",
                 "Matins Gospel IV: Lk 24:1-12 (§112)",
@@ -58,7 +61,7 @@ def odt_paragraphs(path: Path) -> list[str]:
         ),
     ],
 )
-def test_generate_fills_first_safe_slots(tmp_path: Path, service: str, expected: list[str]):
+def test_generate_fills_first_safe_slots(tmp_path: Path, service: str, slot_count: int, expected: list[str]):
     out = tmp_path / service.replace(".yaml", ".odt")
     rc = main(["generate", "--root", str(ROOT), "--service", str(ROOT / "services" / "fixtures" / service), "--out", str(out), "--audit"])
     assert rc == 0
@@ -67,8 +70,42 @@ def test_generate_fills_first_safe_slots(tmp_path: Path, service: str, expected:
         assert text in paragraphs
 
     audit = out.with_suffix(".audit.md").read_text(encoding="utf-8")
-    assert "slot_fill_count: 10" in audit
+    assert f"slot_fill_count: {slot_count}" in audit
     assert "bare_var_incipit_count: 0" in audit
+
+
+def test_simple_service_explicitly_omits_vespers_readings(tmp_path: Path):
+    out = tmp_path / "efsevios.odt"
+    rc = main([
+        "generate",
+        "--root",
+        str(ROOT),
+        "--service",
+        str(ROOT / "services" / "fixtures" / "2026-06-22-tone-iv-efsevios.yaml"),
+        "--out",
+        str(out),
+        "--audit",
+    ])
+    assert rc == 0
+    paragraphs = odt_paragraphs(out)
+    assert "3 Readings: [Minai.]“A Reading from ___”…" not in paragraphs
+    assert "vespers.readings" in out.with_suffix(".audit.md").read_text(encoding="utf-8")
+
+
+def test_non_explicit_services_keep_vespers_readings_placeholder_for_now(tmp_path: Path):
+    out = tmp_path / "iona.odt"
+    rc = main([
+        "generate",
+        "--root",
+        str(ROOT),
+        "--service",
+        str(ROOT / "services" / "fixtures" / "2026-06-28-tone-iii-iona-polyeleos.yaml"),
+        "--out",
+        str(out),
+    ])
+    assert rc == 0
+    paragraphs = odt_paragraphs(out)
+    assert "3 Readings: [Minai.]“A Reading from ___”…" in paragraphs
 
 
 def test_generate_rejects_invalid_service_before_writing(tmp_path: Path):

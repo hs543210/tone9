@@ -10,8 +10,11 @@ from lxml import etree
 from .odt.package import OdtPackage
 
 TEXT_NS = "urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+TABLE_NS = "urn:oasis:names:tc:opendocument:xmlns:table:1.0"
 TEXT = f"{{{TEXT_NS}}}"
+TABLE = f"{{{TABLE_NS}}}"
 PARA_TAGS = {f"{TEXT}p", f"{TEXT}h"}
+TABLE_ROW = f"{TABLE}table-row"
 
 GOSPEL_NUMBER_NAMES = {
     "1": "I",
@@ -236,6 +239,40 @@ def _replace_phrase_in_paragraph(
     return SlotChange(slot_id, exact_text, normalized_paragraph_text(elem))
 
 
+def _ancestor(elem: etree._Element, tag: str) -> etree._Element | None:
+    node = elem.getparent()
+    while node is not None:
+        if node.tag == tag:
+            return node
+        node = node.getparent()
+    return None
+
+
+def _remove_block_for_exact_paragraph(root: etree._Element, *, slot_id: str, exact_text: str) -> SlotChange:
+    paragraph = _find_one(root, exact_text)
+    row = _ancestor(paragraph, TABLE_ROW)
+    if row is not None and row.getparent() is not None:
+        row.getparent().remove(row)
+        return SlotChange(slot_id, exact_text, "omit table row")
+    if paragraph.getparent() is None:
+        raise SlotFillError(f"cannot safely omit paragraph {exact_text!r}; no parent")
+    paragraph.getparent().remove(paragraph)
+    return SlotChange(slot_id, exact_text, "omit paragraph")
+
+
+def explicit_slot_override(overlay: dict[str, Any], key: str) -> Any:
+    overrides = overlay.get("slot_overrides")
+    if isinstance(overrides, dict):
+        return overrides.get(key)
+    return None
+
+
+def should_omit_vespers_readings(overlay: dict[str, Any]) -> bool:
+    # Keep this deliberately explicit for the first structural pass.
+    # Shape-rule inference can come later after fixture-wide regression is routine.
+    return explicit_slot_override(overlay, "vespers.readings") == "omit"
+
+
 def build_safe_slot_values(overlay: dict[str, Any], root: Path) -> dict[str, str]:
     service = service_mapping(overlay)
     mg = service.get("matins_gospel")
@@ -344,6 +381,15 @@ def fill_safe_slots(input_odt: Path, output_odt: Path, overlay: dict[str, Any], 
             new=f"“{values['evangelikal_sticheron']}”…",
         )
     )
+
+    if should_omit_vespers_readings(overlay):
+        changes.append(
+            _remove_block_for_exact_paragraph(
+                root_xml,
+                slot_id="vespers.readings",
+                exact_text="3 Readings: [Minai.]“A Reading from ___”…",
+            )
+        )
 
     new_xml = etree.tostring(root_xml, encoding="UTF-8", xml_declaration=True)
     pkg.write_replacements(output_odt, {"content.xml": new_xml})
