@@ -1,4 +1,11 @@
 ---
+- name: Install tone9 host packages on Debian-family systems
+  ansible.builtin.apt:
+    name: "{{ tone9_host_packages }}"
+    state: present
+    update_cache: false
+  when: ansible_os_family == "Debian"
+
 - name: Ensure tone9 group exists
   ansible.builtin.group:
     name: "{{ tone9_runtime_group }}"

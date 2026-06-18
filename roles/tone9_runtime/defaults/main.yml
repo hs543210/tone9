@@ -11,3 +11,13 @@ tone9_image: localhost/tone9/outline-gen:dev
 tone9_build_image: true
 tone9_manage_quadlets: true
 tone9_project_src: "{{ playbook_dir }}/.."
+
+tone9_sync_excludes:
+  - .git
+  - .venv
+  - __pycache__
+  - '*.pyc'
+  - out
+  - metrics
+  - rendered
+  - '*.egg-info'

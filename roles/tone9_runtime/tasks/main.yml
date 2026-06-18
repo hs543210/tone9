@@ -12,27 +12,40 @@
     - "{{ tone9_output_dir }}"
     - "{{ tone9_data_dir }}"
     - "{{ tone9_metrics_dir }}"
+    - "{{ tone9_data_dir }}/cache"
+    - "{{ tone9_data_dir }}/libreoffice-profile"
     - "{{ tone9_current_dir }}/services"
     - "{{ tone9_current_dir }}/templates"
     - "{{ tone9_current_dir }}/registries"
     - "{{ tone9_runtime_home }}/.config/containers/systemd"
 
 - name: Sync tone9 source tree to runtime current directory
-  ansible.builtin.copy:
-    src: "{{ tone9_project_src }}/"
-    dest: "{{ tone9_current_dir }}/"
+  ansible.builtin.command:
+    cmd: >-
+      rsync -a --delete
+      {% for exclude in tone9_sync_excludes %}--exclude={{ exclude | quote }} {% endfor %}
+      {{ tone9_project_src }}/ {{ tone9_current_dir }}/
+  become: true
+  changed_when: true
+
+- name: Ensure synced tone9 tree ownership
+  ansible.builtin.file:
+    path: "{{ tone9_current_dir }}"
+    state: directory
     owner: "{{ tone9_runtime_user }}"
     group: "{{ tone9_runtime_group }}"
-    mode: preserve
+    recurse: true
   become: true
 
 - name: Build tone9 image rootlessly as tone9 user
   ansible.builtin.command:
     cmd: "podman build -t {{ tone9_image }} -f {{ tone9_current_dir }}/Containerfile {{ tone9_current_dir }}"
+    chdir: "{{ tone9_state_root }}"
   become: true
   become_user: "{{ tone9_runtime_user }}"
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u ' ~ tone9_runtime_user) }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('ansible.builtin.pipe', 'id -u ' ~ tone9_runtime_user) }}/bus"
   changed_when: true
   when: tone9_build_image | bool
 
@@ -51,10 +64,13 @@
   when: tone9_manage_quadlets | bool
 
 - name: Reload tone9 user systemd
-  ansible.builtin.command: "systemctl --user daemon-reload"
+  ansible.builtin.command:
+    cmd: "systemctl --user daemon-reload"
+    chdir: "{{ tone9_state_root }}"
   become: true
   become_user: "{{ tone9_runtime_user }}"
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u ' ~ tone9_runtime_user) }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('ansible.builtin.pipe', 'id -u ' ~ tone9_runtime_user) }}/bus"
   changed_when: true
   when: tone9_manage_quadlets | bool
