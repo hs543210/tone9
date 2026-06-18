@@ -1,0 +1,29 @@
+# What done looks like for tone9
+
+`t9` is done enough when it reliably turns reviewed service facts into a
+print-ready compact Orthodox weekly outline without manual reconstruction.
+
+## MVP done
+
+- Runtime deploy works.
+- Fixture smoke passes.
+- Pytest passes.
+- The three live fixtures validate.
+- The generator fills safe header/Gospel/rank slots from reviewed sidecars.
+- Generated ODTs render to PDF.
+- Visual regression reports are produced.
+
+## Useful weekly-tool done
+
+- §1a, §1c, and §1d service shapes generate from reviewed sidecars.
+- Optional rows/blocks work: Readings, Psalm 118, Polyeleos, saint sessionals,
+  saint Exapostilarion, stichoi for 7&8, split Hours, second Liturgy rows.
+- Counts and singular/plural labels are correct.
+- Approved two-page shape is preserved unless explicitly reviewed.
+
+## Mature done
+
+- Source extractors prefill service overlays with confidence/evidence.
+- Human review happens in YAML, not by reconstructing ODT layout.
+- Fixture corpus grows without destabilizing old services.
+- Rendering, visual comparison, audit, and metrics are routine.

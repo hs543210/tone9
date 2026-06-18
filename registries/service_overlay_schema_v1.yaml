@@ -1,0 +1,27 @@
+version: service_overlay_schema_v1
+purpose: >-
+  Human-readable schema for reviewed service overlay YAML files. This is not a
+  full JSON Schema yet; outline_gen.service_schema is the current executable
+  validator.
+required:
+  service:
+    date: ISO date
+    title: printable service title
+    week_tone: I-VIII
+    matins_gospel:
+      number: I-XI
+      reference: scripture reference
+      section: optional but strongly recommended review provenance
+    ods_rank_or_proposed_ods_rank: §1a-§1f
+    rank_label: printable rank label
+recommended:
+  source_inputs:
+    rubrics: source rubrics filename
+    liturgy: source liturgy filename
+    minaion: source Minaion filename
+  shape_rules_exercised: reviewed structural facts used by regression tests
+  slot_overrides: explicit slot-level decisions for generation
+policy:
+  reviewed_sidecar_is_source_of_truth: true
+  extractor_output_is_advisory: true
+  generator_should_fail_before_touching_odt_on_schema_errors: true
