@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+from pathlib import Path
+from outline_gen.slots import slots_by_section
+
+registry = Path("registries/slot_registry_v1.yaml")
+for section, slots in slots_by_section(registry).items():
+    print(section)
+    for slot in slots:
+        print(f"  {slot.id:38} {slot.kind:16} {slot.default_policy}")

@@ -1,0 +1,117 @@
+version: slot_registry_v1
+purpose: >-
+  First stable slot-id vocabulary for tone9. The initial generator may still be
+  copy-based, but all future include/omit/fill logic should target these IDs
+  rather than fragile prose searches.
+slots:
+  - id: header.title
+    section: header
+    kind: text_field
+    description: Main service title at top of outline.
+    default_policy: fill
+    sources: [service_sidecar]
+  - id: header.tone_and_gospel
+    section: header
+    kind: text_field
+    description: Sunday tone, Matins Gospel number/pericope, and ODS rank marker.
+    default_policy: fill
+    sources: [service_sidecar, matins_gospel_cycle]
+  - id: header.service_rank_marker
+    section: header
+    kind: variable_field
+    description: ODS marker such as §1a, §1c, or §1d.
+    default_policy: fill_review
+    style_rule: rank-marker-field
+    sources: [service_shape_classifier, service_sidecar]
+  - id: vespers.lord_i_cried
+    section: great_vespers
+    kind: count_group
+    description: Lord I Cried total and Oktoichos/Minaion stichera allocation.
+    default_policy: fill
+    style_rule: count-total-field + count-paired-field
+    sources: [rubrics_html, minaion_odt, service_sidecar]
+  - id: vespers.readings
+    section: great_vespers
+    kind: optional_row
+    description: Vespers readings row, often omitted for simple services.
+    default_policy: omit_when_absent
+    sources: [rubrics_html, minaion_odt]
+  - id: matins.psalm_118
+    section: matins
+    kind: optional_row
+    description: Psalm 118 / Blessed are the blameless row.
+    default_policy: shape_rule
+    sources: [rubrics_html, service_shape_classifier]
+  - id: matins.polyeleos
+    section: matins
+    kind: optional_row
+    description: Polyeleos and Megalynarion block.
+    default_policy: omit_when_absent
+    sources: [rubrics_html, minaion_odt]
+  - id: matins.saint_sessionals_after_ypakoi
+    section: matins
+    kind: optional_block
+    description: Saint sessionals after Ypakoi for Polyeleos/ranked services.
+    default_policy: omit_when_absent
+    sources: [minaion_odt, service_sidecar]
+  - id: matins.gospel_cycle
+    section: matins
+    kind: registry_fill
+    description: Matins Gospel incipit, Exapostilarion, Theotokion, and Evangelical Sticheron.
+    default_policy: fill
+    sources: [matins_gospel_cycle]
+  - id: matins.kanon.compact_allocation
+    section: matins
+    kind: count_group
+    description: Compact Kanon total and allocation. Counts are spoken/read and not bold.
+    default_policy: fill
+    style_rule: count-spoken
+    sources: [service_sidecar, minaion_odt]
+  - id: matins.exapostilaria.saint
+    section: matins
+    kind: optional_row
+    description: Saint Exapostilarion line.
+    default_policy: omit_when_absent
+    sources: [minaion_odt]
+  - id: praises.stichoi_for_7_and_8
+    section: praises
+    kind: optional_block
+    description: Stichoi for 7 and 8, used only when Minaion/Praises split needs them.
+    default_policy: omit_when_absent
+    sources: [rubrics_html, service_sidecar]
+  - id: praises.oktoichos_doxastik
+    section: praises
+    kind: registry_fill
+    description: Oktoichos Praises Doxastikon when all eight Oktoichos Praises are read.
+    default_policy: shape_rule
+    sources: [oktoichos_praises_doxastika]
+  - id: hours.structure
+    section: hours
+    kind: shape_choice
+    description: Combined 1st/3rd/6th block versus split 1st/6th and 3rd blocks.
+    default_policy: shape_rule
+    sources: [rubrics_html, service_sidecar]
+  - id: liturgy.beatitudes
+    section: liturgy
+    kind: count_group
+    description: Beatitudes total and Oktoichos/Minaion allocation.
+    default_policy: fill
+    sources: [liturgy_html, service_sidecar]
+  - id: liturgy.second_prokeimenon
+    section: liturgy
+    kind: optional_row
+    description: Second Prokeimenon row and plural Prokeimena label.
+    default_policy: omit_when_absent
+    sources: [liturgy_html, service_sidecar]
+  - id: liturgy.second_alleluia
+    section: liturgy
+    kind: optional_row
+    description: Second Alleluia row and plural Alleluiaria label.
+    default_policy: omit_when_absent
+    sources: [liturgy_html, service_sidecar]
+  - id: liturgy.second_communion
+    section: liturgy
+    kind: optional_row
+    description: Second Communion stichos and plural Communion stichoi label.
+    default_policy: omit_when_absent
+    sources: [liturgy_html, service_sidecar]
