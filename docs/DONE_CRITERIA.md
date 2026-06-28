@@ -27,3 +27,15 @@ print-ready compact Orthodox weekly outline without manual reconstruction.
 - Human review happens in YAML, not by reconstructing ODT layout.
 - Fixture corpus grows without destabilizing old services.
 - Rendering, visual comparison, audit, and metrics are routine.
+
+## Fixture-model done
+
+- The corpus includes ordinary Sunday, six-stichira, Polyeleos, and Sunday +
+  major-feast merge profiles.
+- A service may intentionally render with a blank ODS/rank marker when local
+  practice says the Sunday/major-feast merge should not be classified as §1e or
+  §1f2.
+- Source rubrics are not automatically the printed outline; local compact
+  practice controls printed Kanon total and rank marker.
+- Printed Kanon totals remain compact unless the reviewed service sidecar
+  explicitly changes the print profile.

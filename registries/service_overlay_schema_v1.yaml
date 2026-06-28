@@ -12,15 +12,34 @@ required:
       number: I-XI
       reference: scripture reference
       section: optional but strongly recommended review provenance
-    ods_rank_or_proposed_ods_rank: §1a-§1f
-    rank_label: printable rank label
+    ods_rank_or_proposed_ods_rank: §1a-§1f unless local practice explicitly blanks the marker
+    rank_label: printable rank label unless local practice explicitly blanks the marker
 recommended:
+  service:
+    service_shape: one of simple, six_stichira, polyeleos, sunday_major_feast_merge
+    rank_marker_policy: optional policy such as blank_for_major_sunday_feast_merge
   source_inputs:
     rubrics: source rubrics filename
     liturgy: source liturgy filename
     minaion: source Minaion filename
+  local_practice:
+    reviewed_sidecar_is_print_authority: true
+    source_extractors_are_advisory: true
+    kanon_compact_total: 6
+  print_profile:
+    service_shape: generation/print profile classification
+    rank_marker_policy: rank/header marker rendering policy
+    kanon_compact_total: compact printed Kanon model total
   shape_rules_exercised: reviewed structural facts used by regression tests
   slot_overrides: explicit slot-level decisions for generation
+policies:
+  blank_for_major_sunday_feast_merge:
+    allowed_when: service_shape == sunday_major_feast_merge
+    effect: rank marker and rank label may be blank on the printed header
+  compact_kanon:
+    source_rubrics_are_not_print_arithmetic: true
+    reviewed_sidecar_controls_printed_total: true
+    default_printed_total: 6
 policy:
   reviewed_sidecar_is_source_of_truth: true
   extractor_output_is_advisory: true

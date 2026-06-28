@@ -41,3 +41,16 @@ row/block omission from general shape-rule facts.
 - cross-page layout changes
 - shape-rule inference without explicit slot override
 - silent fallback when a known slot anchor is missing
+
+## Fixture-model expansion notes
+
+The Peter/Paul Sunday major-feast merge establishes an important boundary:
+source rubrics may contain larger canon arithmetic, but the generator must not
+translate that arithmetic directly into printed Kanon rows. The reviewed service
+sidecar and its `local_practice` / `print_profile` sections define the printed
+compact form.
+
+The header rank marker can now be intentionally blank for
+`service_shape: sunday_major_feast_merge` with
+`rank_marker_policy: blank_for_major_sunday_feast_merge`. This is a deliberate
+print decision, not a missing field.

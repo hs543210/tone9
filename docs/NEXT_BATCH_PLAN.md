@@ -54,3 +54,30 @@ Candidate targets, in order:
 
 Avoid broad table surgery until each omission/fill has a dedicated anchor and a
 fixture test.
+
+## Batch 014: Peter and Paul fixture model — done
+
+Implemented model/schema/extractor support for:
+
+- `2026-06-29-tone-v-peter-paul`
+- `service_shape: sunday_major_feast_merge`
+- blank header rank marker by local practice
+- compact printed Kanon total 6 despite larger source canon arithmetic
+- multi-saint compact Kanon allocation: Resurrection 1, Theotokos 1, Peter 2,
+  Paul 2
+- Liturgy Beatitudes on 12 with Octoechos 4, Peter 4, Paul 4
+- paired Prokeimena, Alleluiaria, Epistles, Gospels, and Communion stichoi
+
+This remains a fixture/model/extractor expansion only. The new Peter/Paul
+service is not added to the live visual-regression manifest until its live
+`outline.odt` is manually approved.
+
+## Next recommended batch: Peter/Paul generation prep
+
+Candidate targets:
+
+1. add a candidate-fixture runner that can generate non-live services without
+   requiring a user-approved `outline.odt`;
+2. fill safe Kanon allocation rows from reviewed sidecar data;
+3. fill paired Liturgy labels/refs from reviewed sidecar data;
+4. only then add Peter/Paul to visual regression after manual outline approval.

@@ -8,6 +8,8 @@ import yaml
 
 TONE_VALUES = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "1", "2", "3", "4", "5", "6", "7", "8"}
 RANK_VALUES = {"§1a", "§1b", "§1c", "§1d", "§1e", "§1f"}
+SERVICE_SHAPE_VALUES = {"simple", "six_stichira", "polyeleos", "sunday_major_feast_merge"}
+BLANK_RANK_MARKER_POLICIES = {"blank_for_major_sunday_feast_merge"}
 GOSPEL_VALUES = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"}
 
 
@@ -31,6 +33,26 @@ def load_yaml(path: Path) -> dict[str, Any]:
 
 def _rank(service: dict[str, Any]) -> Any:
     return service.get("ods_rank") or service.get("proposed_ods_rank") or service.get("rank")
+
+
+def _rank_marker_policy(data: dict[str, Any], service: dict[str, Any]) -> str:
+    for container in (service, data.get("local_practice"), data.get("print_profile")):
+        if isinstance(container, dict) and container.get("rank_marker_policy"):
+            return str(container.get("rank_marker_policy")).strip()
+    return ""
+
+
+def _service_shape(data: dict[str, Any], service: dict[str, Any]) -> str:
+    for container in (service, data.get("print_profile")):
+        if isinstance(container, dict) and container.get("service_shape"):
+            return str(container.get("service_shape")).strip()
+    return ""
+
+
+def _allows_blank_rank(data: dict[str, Any], service: dict[str, Any]) -> bool:
+    policy = _rank_marker_policy(data, service)
+    shape = _service_shape(data, service)
+    return policy in BLANK_RANK_MARKER_POLICIES or shape == "sunday_major_feast_merge"
 
 
 def validate_service_overlay(path: Path) -> ValidationResult:
@@ -66,14 +88,36 @@ def validate_service_overlay(path: Path) -> ValidationResult:
         if not mg.get("section"):
             warnings.append("service.matins_gospel.section is missing; useful for review provenance")
 
+    service_shape = _service_shape(data, service)
+    if service_shape and service_shape not in SERVICE_SHAPE_VALUES:
+        warnings.append(f"service_shape is unusual: {service_shape!r}")
+
     rank = _rank(service)
-    if not rank:
+    blank_rank_allowed = _allows_blank_rank(data, service)
+    if not rank and not blank_rank_allowed:
         errors.append("service.ods_rank or service.proposed_ods_rank is required")
-    elif str(rank).strip() not in RANK_VALUES:
+    elif rank and str(rank).strip() not in RANK_VALUES:
         warnings.append(f"service rank is unusual: {rank!r}")
 
-    if not service.get("rank_label"):
+    rank_label = service.get("rank_label")
+    if not rank_label and not blank_rank_allowed:
         errors.append("service.rank_label is required")
+
+    policy = _rank_marker_policy(data, service)
+    if policy and policy not in BLANK_RANK_MARKER_POLICIES:
+        warnings.append(f"rank_marker_policy is unusual: {policy!r}")
+
+    for key in ["local_practice", "print_profile"]:
+        if key in data and not isinstance(data.get(key), dict):
+            errors.append(f"{key} must be a mapping when present")
+
+    compact_total = None
+    for container_key in ["local_practice", "print_profile"]:
+        container = data.get(container_key)
+        if isinstance(container, dict) and container.get("kanon_compact_total") is not None:
+            compact_total = container.get("kanon_compact_total")
+    if compact_total is not None and compact_total != 6:
+        warnings.append(f"kanon_compact_total is not 6: {compact_total!r}")
 
     if "source_inputs" not in data:
         warnings.append("source_inputs missing; extraction provenance will be weaker")

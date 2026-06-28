@@ -137,9 +137,11 @@ def service_pericope(service: dict[str, Any], gospel_entry: dict[str, str]) -> s
 
 
 def service_marker(overlay: dict[str, Any], service: dict[str, Any]) -> str:
-    exact = service.get("header_marker")
-    if exact:
-        return str(exact)
+    if "header_marker" in service:
+        return str(service.get("header_marker") or "")
+    override = explicit_slot_override(overlay, "header.service_rank_marker")
+    if override is not None:
+        return str(override)
     for touchups_key in ("user_touchups_v3", "user_touchups_v2", "user_touchups"):
         touchups = overlay.get(touchups_key)
         if isinstance(touchups, dict):
