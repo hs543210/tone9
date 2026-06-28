@@ -54,3 +54,20 @@ The header rank marker can now be intentionally blank for
 `service_shape: sunday_major_feast_merge` with
 `rank_marker_policy: blank_for_major_sunday_feast_merge`. This is a deliberate
 print decision, not a missing field.
+
+## Peter/Paul reviewed body slots
+
+For `sunday_major_feast_merge`, the reviewed service sidecar may include a
+`print_slots` mapping. This is deliberately narrower than a parser result: it is
+reviewed print truth for known placeholders in the v8 ODT boilerplate. The first
+body-fill pass supports Peter/Paul without row deletion:
+
+- Great Vespers Lord I Cried count/feast lines;
+- Matins Apostle troparia/sessionals/Magnification;
+- compact multi-saint Kanon allocation;
+- Praises total, Apostle count, and final psalm verses;
+- Hours alternating Kontakia helper fields;
+- Liturgy Beatitudes and second Prokeimenon/Alleluia/Communion fields.
+
+The sidecar remains the authority. Source extractor arithmetic must not override
+`print_profile.kanon_compact_total` or reviewed `print_slots` allocation.

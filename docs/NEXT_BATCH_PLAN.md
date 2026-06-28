@@ -81,3 +81,22 @@ Candidate targets:
 2. fill safe Kanon allocation rows from reviewed sidecar data;
 3. fill paired Liturgy labels/refs from reviewed sidecar data;
 4. only then add Peter/Paul to visual regression after manual outline approval.
+
+## Batch 015-017 checkpoint: Peter/Paul reviewed body slot fill
+
+The next compiler passes are intentionally still slot-fill oriented, not a general
+ODT editing engine:
+
+- fill reviewed Great Vespers feast/Minaion incipits for Peter/Paul;
+- fill Matins troparia, Magnification, Apostle sessional incipits, and the
+  Apostle Exapostilarion incipit;
+- replace the single-saint Kanon placeholder with the reviewed compact
+  multi-saint allocation: `1 Resurrection`, `1 Theotokos`, `2 Apostle Peter`,
+  `2 Apostle Paul`;
+- fill Praises totals, Apostle count, and final two psalm verses;
+- fill Hours Apostle troparion/Kontakion placeholders;
+- fill Beatitudes on 12 and second Prokeimenon / Alleluia / Communion slots.
+
+Known limitation: the generated Peter/Paul candidate may render to 3 pages until
+there is a manually approved live outline and a fit-oriented visual-regression
+pass. Do not solve that by clipping incipits or dropping final words.

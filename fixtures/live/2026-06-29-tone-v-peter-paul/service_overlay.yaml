@@ -129,6 +129,91 @@ shape_rules_exercised:
       - "Praise the Lord in the heavens"
       - "Their sound hath gone forth"
 
+print_slots:
+  vespers:
+    lord_i_cried:
+      oktoichos_count: 4
+      minaion_count: 6
+      minaion_tone: II
+      minaion_incipit: "With what wreaths of praise"
+      glory_tone: IV
+      glory_incipit: "By His thrice-repeated question"
+    aposticha:
+      glory_tone: VI
+      glory_incipit: "A joyous feast hath shone forth"
+      now_tone: VI
+      now_incipit: "Christ the Lord"
+  matins:
+    troparia:
+      glory_tone: IV
+      glory_incipit: "With the apostles"
+      now_tone: IV
+      now_incipit: "The mystery hidden"
+    magnification:
+      incipit: "We magnify you, O apostles of Christ, Peter and Paul; by your teaching the whole world hath been enlightened, and all the ends of it brought unto Christ"
+    sessionals:
+      - slot: first_chant
+        tone: VIII
+        incipit: "Forsaking the fishing of the deep"
+      - slot: second_chant
+        tone: VIII
+        incipit: "Receiving from Christ a heavenly calling"
+      - slot: after_polyeleos
+        tone: IV
+        incipit: "With luminous radiance ye enlighten"
+    canon:
+      allocation:
+        - count: 1
+          label: Resurrection
+          source: Oktoichos
+          refrain: "Glory to Thy Holy Resurrection, O Lord"
+        - count: 1
+          label: Theotokos
+          source: Oktoichos
+          refrain: "Most Holy Theotokos, save us"
+        - count: 2
+          label: Apostle Peter
+          source: Minai.
+          refrain: "Holy Apostle Peter, pray to God for us"
+        - count: 2
+          label: Apostle Paul
+          source: Minai.
+          refrain: "Holy Apostle Paul, pray to God for us"
+      after_ode_iii:
+        kontakion_tone: II
+        kontakion_incipit: "Thou hast taken to Thyself, O Lord"
+        ikos_incipit: "Fill my tongue with light"
+        hypakoe_tone: VIII
+        hypakoe_incipit: "What dungeon held thee not prisoner"
+    exapostilaria:
+      glory_incipit: "Let us all hymn the foremost among the apostles"
+    praises:
+      total: "8+2 total"
+      oktoichos_count: 4
+      minaion_count: 4
+      minaion_tone: IV
+      minaion_incipit: "When the Savior questioned"
+      stichoi_for_7_and_8:
+        - "Their sound hath gone forth into all the earth, and their words unto the ends of the world"
+        - "The heavens declare the glory of God, and the firmament proclaimeth the work of His hands"
+  hours:
+    apostle_troparion: "O foremost of the Apostles"
+    apostle_kontakion: "Thou hast taken to Thyself, O Lord"
+  liturgy:
+    beatitudes_total: 12
+    oktoichos_beatitudes: 4
+    peter_beatitudes:
+      ode: III
+      incipit: "The sweet mouth of Christ God"
+    paul_beatitudes:
+      ode: VI
+      incipit: "Spurning all the beautiful things of the world"
+    second_prokeimenon_tone: VIII
+    second_prokeimenon_incipit: "Their sound hath gone forth"
+    second_alleluia_tone: I
+    second_alleluia_incipit: "The heavens shall confess Thy wonders, O Lord"
+    second_communion_incipit: "Their sound hath gone forth"
+
 slot_overrides:
   header.service_rank_marker: ""
   canon.compact_total: 6

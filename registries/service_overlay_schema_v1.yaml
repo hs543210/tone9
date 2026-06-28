@@ -31,6 +31,7 @@ recommended:
     rank_marker_policy: rank/header marker rendering policy
     kanon_compact_total: compact printed Kanon model total
   shape_rules_exercised: reviewed structural facts used by regression tests
+  print_slots: reviewed print-facing slot values for safe ODT placeholder fill
   slot_overrides: explicit slot-level decisions for generation
 policies:
   blank_for_major_sunday_feast_merge:

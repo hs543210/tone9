@@ -262,6 +262,128 @@ def _remove_block_for_exact_paragraph(root: etree._Element, *, slot_id: str, exa
     return SlotChange(slot_id, exact_text, "omit paragraph")
 
 
+
+
+def get_path(data: dict[str, Any], *keys: str) -> Any:
+    node: Any = data
+    for key in keys:
+        if not isinstance(node, dict):
+            return None
+        node = node.get(key)
+    return node
+
+
+def print_slots(overlay: dict[str, Any]) -> dict[str, Any]:
+    value = overlay.get("print_slots")
+    return value if isinstance(value, dict) else {}
+
+
+
+
+def _find_first(root: etree._Element, exact_text: str) -> etree._Element:
+    for p in iter_paragraphs(root):
+        if normalized_paragraph_text(p) == exact_text:
+            return p
+    raise SlotFillError(f"expected at least one paragraph {exact_text!r}, found 0")
+
+
+def _replace_first_text_across_pieces(
+    root: etree._Element,
+    *,
+    slot_id: str,
+    exact_text: str,
+    replacements: list[tuple[str, str]],
+) -> SlotChange:
+    elem = _find_first(root, exact_text)
+    missing: list[str] = []
+    for old, new in replacements:
+        replaced = False
+        for piece in text_pieces(elem):
+            if old in piece.value:
+                piece.value = piece.value.replace(old, new, 1)
+                replaced = True
+                break
+        if not replaced:
+            missing.append(old)
+    if missing:
+        raise SlotFillError(f"could not replace {missing!r} in first {exact_text!r}")
+    return SlotChange(slot_id, exact_text, normalized_paragraph_text(elem))
+
+
+def _replace_text_across_pieces(
+    root: etree._Element,
+    *,
+    slot_id: str,
+    exact_text: str,
+    replacements: list[tuple[str, str]],
+    require_all: bool = True,
+) -> SlotChange:
+    elem = _find_one(root, exact_text)
+    missing: list[str] = []
+    for old, new in replacements:
+        replaced = False
+        for piece in text_pieces(elem):
+            if old in piece.value:
+                piece.value = piece.value.replace(old, new, 1)
+                replaced = True
+                break
+        if not replaced:
+            missing.append(old)
+    if require_all and missing:
+        raise SlotFillError(f"could not replace {missing!r} in {exact_text!r}")
+    return SlotChange(slot_id, exact_text, normalized_paragraph_text(elem))
+
+
+
+
+def _set_first_matching_piece_and_clear_rest(root: etree._Element, *, slot_id: str, exact_text: str, replacement: str) -> SlotChange:
+    elem = _find_first(root, exact_text)
+    pieces = [piece for piece in text_pieces(elem) if piece.value]
+    if not pieces:
+        raise SlotFillError(f"cannot safely replace empty paragraph {exact_text!r}")
+    pieces[0].value = replacement
+    for piece in pieces[1:]:
+        piece.value = ""
+    return SlotChange(slot_id, exact_text, normalized_paragraph_text(elem))
+
+
+def _set_first_piece_and_clear_rest(root: etree._Element, *, slot_id: str, exact_text: str, replacement: str) -> SlotChange:
+    elem = _find_one(root, exact_text)
+    pieces = [piece for piece in text_pieces(elem) if piece.value]
+    if not pieces:
+        raise SlotFillError(f"cannot safely replace empty paragraph {exact_text!r}")
+    pieces[0].value = replacement
+    for piece in pieces[1:]:
+        piece.value = ""
+    return SlotChange(slot_id, exact_text, normalized_paragraph_text(elem))
+
+
+def _clone_row_after_exact_paragraph(root: etree._Element, *, slot_id: str, exact_text: str) -> etree._Element:
+    paragraph = _find_one(root, exact_text)
+    row = _ancestor(paragraph, TABLE_ROW)
+    if row is not None and row.getparent() is not None:
+        new_row = etree.fromstring(etree.tostring(row))
+        row.addnext(new_row)
+        return new_row
+    if paragraph.getparent() is None:
+        raise SlotFillError(f"cannot safely clone paragraph for {exact_text!r}")
+    new_paragraph = etree.fromstring(etree.tostring(paragraph))
+    paragraph.addnext(new_paragraph)
+    return new_paragraph
+
+
+def _replace_in_subtree(elem: etree._Element, replacements: list[tuple[str, str]]) -> None:
+    for old, new in replacements:
+        replaced = False
+        for piece in text_pieces(elem):
+            if old in piece.value:
+                piece.value = piece.value.replace(old, new, 1)
+                replaced = True
+                break
+        if not replaced:
+            raise SlotFillError(f"could not replace {old!r} in cloned subtree")
+
+
 def explicit_slot_override(overlay: dict[str, Any], key: str) -> Any:
     overrides = overlay.get("slot_overrides")
     if isinstance(overrides, dict):
@@ -297,6 +419,307 @@ def build_safe_slot_values(overlay: dict[str, Any], root: Path) -> dict[str, str
         "exapostilarion_theotokion": str(gospel_entry.get("exapostilarion_theotokion") or "").strip(),
         "evangelikal_sticheron": str(gospel_entry.get("evangelikal_sticheron") or "").strip(),
     }
+
+
+
+def _fill_peter_paul_vespers(root: etree._Element, slots: dict[str, Any]) -> list[SlotChange]:
+    pp = get_path(slots, "vespers")
+    if not isinstance(pp, dict):
+        return []
+    changes: list[SlotChange] = []
+    lic = pp.get("lord_i_cried") if isinstance(pp.get("lord_i_cried"), dict) else {}
+    if lic:
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="vespers.lord_i_cried.oktoichos_count",
+            exact_text='___ stichira:[Oktoichos,T.V]“By Thy Precious Cross didst Thou put the devil”…',
+            replacements=[("___", str(lic.get("oktoichos_count", "")))],
+        ))
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="vespers.lord_i_cried.minaion_count",
+            exact_text='___” [Minai.,T.___] “”…',
+            replacements=[
+                ("___", str(lic.get("minaion_count", ""))),
+                ("___", str(lic.get("minaion_tone", ""))),
+                ('“”…', f'“{lic.get("minaion_incipit", "")}”…'),
+            ],
+        ))
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="vespers.lord_i_cried.glory",
+            exact_text='“Glory”… ⮡[T.___] “”…',
+            replacements=[
+                ("___", str(lic.get("glory_tone", ""))),
+                ('“”…', f'“{lic.get("glory_incipit", "")}”…'),
+            ],
+        ))
+    aposticha = pp.get("aposticha") if isinstance(pp.get("aposticha"), dict) else {}
+    if aposticha:
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="vespers.aposticha.glory",
+            exact_text='“Glory”… [Minai.,T.___] “”…',
+            replacements=[
+                ("___", str(aposticha.get("glory_tone", ""))),
+                ('“”…', f'“{aposticha.get("glory_incipit", "")}”…'),
+            ],
+        ))
+        changes.append(_set_first_piece_and_clear_rest(
+            root,
+            slot_id="vespers.aposticha.now",
+            exact_text='“Now”… [Oktoich.,T.V] “Thou art the temple and portal, the palace”…',
+            replacement=f'“Now”… [Minai.,T.{aposticha.get("now_tone", "")}] “{aposticha.get("now_incipit", "")}”…',
+        ))
+    return changes
+
+
+def _fill_peter_paul_matins(root: etree._Element, slots: dict[str, Any]) -> list[SlotChange]:
+    matins = get_path(slots, "matins")
+    if not isinstance(matins, dict):
+        return []
+    changes: list[SlotChange] = []
+    troparia = matins.get("troparia") if isinstance(matins.get("troparia"), dict) else {}
+    if troparia:
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="matins.troparia.glory",
+            exact_text='“Glory”… [Minai.,T.___] 1x “”…',
+            replacements=[
+                ("___", str(troparia.get("glory_tone", ""))),
+                ('“”…', f'“{troparia.get("glory_incipit", "")}”…'),
+            ],
+        ))
+        changes.append(_set_first_piece_and_clear_rest(
+            root,
+            slot_id="matins.troparia.now",
+            exact_text='“Now”…Theotok.[Oktoich.,T.V] “Rejoice, impassable gate of the Lord! Rejoice,”…',
+            replacement=f'“Now”…Theotok. [Oktoich.,T.{troparia.get("now_tone", "")}] “{troparia.get("now_incipit", "")}”…',
+        ))
+    mag = matins.get("magnification") if isinstance(matins.get("magnification"), dict) else {}
+    if mag:
+        changes.append(_set_first_piece_and_clear_rest(
+            root,
+            slot_id="matins.polyeleos.magnification",
+            exact_text='Megalynarion[Minai.]“We magnify thee, O holy ___”…',
+            replacement=f'Megalynarion [Minai.] “{mag.get("incipit", "")}”…',
+        ))
+    sessionals = matins.get("sessionals") if isinstance(matins.get("sessionals"), list) else []
+    exacts = [
+        '⮡[1st chant/Psalt.,T.___]“”…',
+        '⮡[2nd chant/Psalt.,T.___]“”…',
+        '“Glory”…“Now”…*⮡[aft.Polyelei,T.___]“”…',
+    ]
+    for item, exact in zip(sessionals, exacts):
+        if not isinstance(item, dict):
+            continue
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id=f'matins.sessional.{item.get("slot", "unknown")}',
+            exact_text=exact,
+            replacements=[
+                ("___", str(item.get("tone", ""))),
+                ('“”…', f'“{item.get("incipit", "")}”…'),
+            ],
+        ))
+    exap = matins.get("exapostilaria") if isinstance(matins.get("exapostilaria"), dict) else {}
+    if exap:
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="matins.exapostilaria.glory",
+            exact_text='“Glory”… [Minai.] “”…',
+            replacements=[('“”…', f'“{exap.get("glory_incipit", "")}”…')],
+        ))
+    return changes
+
+
+def _fill_peter_paul_kanon(root: etree._Element, slots: dict[str, Any]) -> list[SlotChange]:
+    canon = get_path(slots, "matins", "canon")
+    if not isinstance(canon, dict):
+        return []
+    allocation = canon.get("allocation") if isinstance(canon.get("allocation"), list) else []
+    if len(allocation) != 4:
+        return []
+    changes: list[SlotChange] = []
+    # Keep the total and Resurrection row, then map the remaining three fixed rows to
+    # Theotokos / Apostle Peter / Apostle Paul. This is intentionally exact-template-only.
+    second, third, fourth = allocation[1], allocation[2], allocation[3]
+    changes.append(_set_first_piece_and_clear_rest(
+        root,
+        slot_id="matins.kanon.compact_allocation.theotokos",
+        exact_text='1 Cross/Resurr.⮡“Glory to Thy precious Cross& Resurrection, O Lord”',
+        replacement=f'{second.get("count")} {second.get("label")} ⮡ “{second.get("refrain")}”',
+    ))
+    changes.append(_set_first_piece_and_clear_rest(
+        root,
+        slot_id="matins.kanon.compact_allocation.peter",
+        exact_text='1Theotokos⮡“Most Holy Theotokos, save us”',
+        replacement=f'{third.get("count")} {third.get("label")} [{third.get("source")}] “{third.get("refrain")}”',
+    ))
+    changes.append(_replace_text_across_pieces(
+        root,
+        slot_id="matins.kanon.compact_allocation.paul",
+        exact_text='3___ [Minai.] “___, pray to God for us”',
+        replacements=[
+            ("3", str(fourth.get("count", ""))),
+            ("___", f" {fourth.get("label", "")}"),
+            ("___", str(fourth.get("refrain", "")).replace(", pray to God for us", "")),
+        ],
+    ))
+    after = canon.get("after_ode_iii") if isinstance(canon.get("after_ode_iii"), dict) else {}
+    if after:
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="matins.kanon.after_ode_iii.kontakion",
+            exact_text='Kontak.[Minai.,aft. Ode VI,T.___]“”…',
+            replacements=[
+                ("___", str(after.get("kontakion_tone", ""))),
+                ('“”…', f'“{after.get("kontakion_incipit", "")}”…'),
+            ],
+        ))
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="matins.kanon.after_ode_iii.ikos",
+            exact_text='+ Ichos “”…',
+            replacements=[('“”…', f'“{after.get("ikos_incipit", "")}”…')],
+        ))
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="matins.kanon.after_ode_iii.hypakoe",
+            exact_text='Sess. hymn ⮡[aft. Ode III,T.___]“”…',
+            replacements=[
+                ("___", str(after.get("hypakoe_tone", ""))),
+                ('“”…', f'“{after.get("hypakoe_incipit", "")}”…'),
+            ],
+        ))
+    return changes
+
+
+def _fill_peter_paul_praises(root: etree._Element, slots: dict[str, Any]) -> list[SlotChange]:
+    praises = get_path(slots, "praises") or get_path(slots, "matins", "praises")
+    if not isinstance(praises, dict):
+        return []
+    changes: list[SlotChange] = []
+    changes.append(_replace_text_across_pieces(
+        root,
+        slot_id="praises.total",
+        exact_text='Lauds / Praises [Orolog.,p.75] ___ total',
+        replacements=[("___ total", str(praises.get("total", "")))],
+    ))
+    changes.append(_replace_text_across_pieces(
+        root,
+        slot_id="praises.oktoichos_count",
+        exact_text='___ [Oktoich.,T.V] “O Lord, when the tomb had been sealed by the”…',
+        replacements=[("___", str(praises.get("oktoichos_count", "")))],
+    ))
+    changes.append(_replace_text_across_pieces(
+        root,
+        slot_id="praises.minaion_count",
+        exact_text='___ [Minai.,T.___] “”…',
+        replacements=[
+            ("___", str(praises.get("minaion_count", ""))),
+            ("___", str(praises.get("minaion_tone", ""))),
+            ('“”…', f'“{praises.get("minaion_incipit", "")}”…'),
+        ],
+    ))
+    verses = praises.get("stichoi_for_7_and_8") if isinstance(praises.get("stichoi_for_7_and_8"), list) else []
+    if len(verses) >= 2:
+        changes.append(_set_first_matching_piece_and_clear_rest(root, slot_id="praises.stichos_7", exact_text='“”', replacement=f'“{verses[0]}”'))
+        changes.append(_set_first_matching_piece_and_clear_rest(root, slot_id="praises.stichos_8", exact_text='“”', replacement=f'“{verses[1]}”'))
+    return changes
+
+
+def _fill_peter_paul_hours_and_liturgy(root: etree._Element, slots: dict[str, Any]) -> list[SlotChange]:
+    changes: list[SlotChange] = []
+    hours = get_path(slots, "hours")
+    if isinstance(hours, dict):
+        changes.append(_replace_first_text_across_pieces(
+            root,
+            slot_id="hours.troparia.1_6.apostles",
+            exact_text='[Minai.]“”…',
+            replacements=[('“”…', f'“{hours.get("apostle_troparion", "")}”…')],
+        ))
+        changes.append(_replace_first_text_across_pieces(
+            root,
+            slot_id="hours.troparia.3.apostles",
+            exact_text='[Minai.]“”…',
+            replacements=[('“”…', f'“{hours.get("apostle_troparion", "")}”…')],
+        ))
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="hours.kontakia.alternating_apostles",
+            exact_text='Kontak. ⮡ “”…',
+            replacements=[('“”…', f'“{hours.get("apostle_kontakion", "")}”…')],
+        ))
+    liturgy = get_path(slots, "liturgy")
+    if isinstance(liturgy, dict):
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="liturgy.beatitudes.total",
+            exact_text='Beatitudes: [Orolog.,p.136]___ total',
+            replacements=[("___ total", f'{liturgy.get("beatitudes_total", "")} total')],
+        ))
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="liturgy.beatitudes.oktoichos_count",
+            exact_text='___ [Oktoich.,T.V] “Believing Thee to be God, O Christ, the thief on”…',
+            replacements=[("___", str(liturgy.get("oktoichos_beatitudes", "")))],
+        ))
+        peter = liturgy.get("peter_beatitudes") if isinstance(liturgy.get("peter_beatitudes"), dict) else {}
+        paul = liturgy.get("paul_beatitudes") if isinstance(liturgy.get("paul_beatitudes"), dict) else {}
+        exact_beat = '4[Minai.,Ode ___]“”…'
+        if peter:
+            changes.append(_replace_text_across_pieces(
+                root,
+                slot_id="liturgy.beatitudes.peter",
+                exact_text=exact_beat,
+                replacements=[
+                    ("___", str(peter.get("ode", ""))),
+                    ('“”…', f'“{peter.get("incipit", "")}”…'),
+                ],
+            ))
+        if paul:
+            new_row = _clone_row_after_exact_paragraph(root, slot_id="liturgy.beatitudes.paul", exact_text=f'4[Minai.,Ode {peter.get("ode", "")}]“{peter.get("incipit", "")}”…')
+            _replace_in_subtree(new_row, [(str(peter.get("ode", "")), str(paul.get("ode", ""))), (str(peter.get("incipit", "")), str(paul.get("incipit", "")))])
+            changes.append(SlotChange("liturgy.beatitudes.paul", exact_beat, f'4 [Minai.,Ode {paul.get("ode", "")}] “{paul.get("incipit", "")}”…'))
+        changes.append(_replace_first_text_across_pieces(
+            root,
+            slot_id="liturgy.second_prokeimenon",
+            exact_text='2nd[Minai.,T.___]“”…',
+            replacements=[
+                ("___", str(liturgy.get("second_prokeimenon_tone", ""))),
+                ('“”…', f'“{liturgy.get("second_prokeimenon_incipit", "")}”…'),
+            ],
+        ))
+        changes.append(_replace_first_text_across_pieces(
+            root,
+            slot_id="liturgy.second_alleluia",
+            exact_text='2nd[Minai.,T.___]“”…',
+            replacements=[
+                ("___", str(liturgy.get("second_alleluia_tone", ""))),
+                ('“”…', f'“{liturgy.get("second_alleluia_incipit", "")}”…'),
+            ],
+        ))
+        changes.append(_replace_text_across_pieces(
+            root,
+            slot_id="liturgy.second_communion",
+            exact_text='“”…',
+            replacements=[('“”…', f'“{liturgy.get("second_communion_incipit", "")}”…')],
+        ))
+    return changes
+
+
+def fill_reviewed_body_slots(root: etree._Element, overlay: dict[str, Any]) -> list[SlotChange]:
+    slots = print_slots(overlay)
+    if not slots:
+        return []
+    changes: list[SlotChange] = []
+    changes.extend(_fill_peter_paul_vespers(root, slots))
+    changes.extend(_fill_peter_paul_matins(root, slots))
+    changes.extend(_fill_peter_paul_kanon(root, slots))
+    changes.extend(_fill_peter_paul_praises(root, slots))
+    changes.extend(_fill_peter_paul_hours_and_liturgy(root, slots))
+    return changes
 
 
 def fill_safe_slots(input_odt: Path, output_odt: Path, overlay: dict[str, Any], root: Path) -> SlotFillResult:
@@ -383,6 +806,8 @@ def fill_safe_slots(input_odt: Path, output_odt: Path, overlay: dict[str, Any], 
             new=f"“{values['evangelikal_sticheron']}”…",
         )
     )
+
+    changes.extend(fill_reviewed_body_slots(root_xml, overlay))
 
     if should_omit_vespers_readings(overlay):
         changes.append(

@@ -107,7 +107,7 @@ def validate_service_overlay(path: Path) -> ValidationResult:
     if policy and policy not in BLANK_RANK_MARKER_POLICIES:
         warnings.append(f"rank_marker_policy is unusual: {policy!r}")
 
-    for key in ["local_practice", "print_profile"]:
+    for key in ["local_practice", "print_profile", "print_slots"]:
         if key in data and not isinstance(data.get(key), dict):
             errors.append(f"{key} must be a mapping when present")
 

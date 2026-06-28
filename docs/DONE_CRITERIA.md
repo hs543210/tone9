@@ -39,3 +39,15 @@ print-ready compact Orthodox weekly outline without manual reconstruction.
   practice controls printed Kanon total and rank marker.
 - Printed Kanon totals remain compact unless the reviewed service sidecar
   explicitly changes the print profile.
+
+## Peter/Paul fixture-model done criteria
+
+Peter/Paul is not done merely because the header renders. It becomes a useful
+fixture when:
+
+- reviewed body slot fills compile into ODT without bare `var-incipit` failures;
+- compact Kanon stays at six and uses the reviewed multi-saint allocation;
+- paired liturgy fields render visibly where the boilerplate has safe anchors;
+- a manually approved live `outline.odt` is added to visual regression;
+- fit/page-count changes are reviewed visually rather than solved by clipping
+  text or silently omitting required lines.
